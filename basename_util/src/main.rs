@@ -34,6 +34,9 @@ fn main() -> ExitCode {
             );
         }
 
+        Some("/") => {
+            println!("/");
+        }
         //allows multiple input and outputs the basename
         Some("-a") => {
             for arg in args {
