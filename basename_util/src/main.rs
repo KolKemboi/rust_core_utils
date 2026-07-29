@@ -15,7 +15,8 @@ fn main() -> ExitCode {
     // let name = Path::new(&path).file_name().unwrap().to_string_lossy();
     match args.next().as_deref() {
         Some("-v") | Some("--version") => {
-            println!("Basename version 0.1.0");
+            println!("Version: {}", env!("CARGO_PKG_VERSION"));
+            // "Version: {}", env!("CARGO_PKG_VERSION")
         }
         Some("-h") | Some("--help") => {
             println!(
