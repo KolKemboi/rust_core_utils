@@ -14,10 +14,14 @@ fn main() {
         Some("--version") => {
             println!("{}", env!("CARGO_PKG_VERSION"));
         }
-        Some(arg) => {
-            let secs: u64 = arg.trim().parse().expect("try entering a number suzan");
-            thread::sleep(Duration::from_secs(secs));
-        }
+        Some(arg) => match convert_arg_to_duration(arg) {
+            Ok(v) => {
+                thread::sleep(Duration::from_secs(v));
+            }
+            Err(e) => {
+                println!("{e}");
+            }
+        },
         None => {
             println!("sleep requires input,\ntry sleep --help");
         }
@@ -27,6 +31,20 @@ fn main() {
 fn convert_arg_to_duration(val: &str) -> Result<u64, String> {
     match val.trim().parse() {
         Ok(num) => Ok(num),
-        Err(val) => Err("{val} can not be use".to_string()),
+        Err(_err) => Err(format!("'{val}' interval can not be used").to_string()),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn successful_input_conversion_test() {
+        let output = super::convert_arg_to_duration("1");
+        assert_eq!(output, Ok(1));
+    }
+    #[test]
+    fn failed_input_conversion_test() {
+        let output = super::convert_arg_to_duration("v");
+        assert_eq!(output, Err("'v' interval can not be used".to_string()));
     }
 }
