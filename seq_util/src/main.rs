@@ -1,8 +1,12 @@
 use std::env;
+// use std::process::ExitCode;
 
 fn main() {
-    let mut args = env::args();
-    args.next();
+    let args: Vec<String> = env::args().collect();
+    let args_count = args.len();
+    let mut default_start = 1;
+    let mut default_step = 1;
+    let mut default_sep = "\n";
 
     let help_msg: String = String::from(
         "
@@ -32,211 +36,337 @@ decimal numbers with maximum precision PREC, and to %g otherwise.
         ",
     );
 
-    match args.next().as_deref() {
-        Some("--help") => {
-            println!("{help_msg}");
-        }
-        Some("--version") => {
+    if args_count == 1 {
+        println!("{}", help_msg);
+        // return std::process::exit(1);
+    }
+    if args_count == 2 {
+        if args[1] == "--help" {
+            println!("{}", help_msg);
+        } else if args[1] == "--version" {
             println!("{}", env!("CARGO_PKG_VERSION"));
-        }
-        Some("-f") | Some("--format") => match args.next().as_deref() {
-            Some("%f") => {
-                let default = 1;
-
-                let arg_length = args.len();
-
-                if arg_length == 3 {
-                    let start = match convert_to_int(args.next().as_deref().unwrap()) {
-                        Ok(v) => v,
-                        Err(e) => {
-                            println!("{}", e);
-                            return;
-                        }
-                    };
-                    let step_size = match convert_to_int(args.next().as_deref().unwrap()) {
-                        Ok(v) => v,
-                        Err(e) => {
-                            println!("{}", e);
-                            return;
-                        }
-                    };
-                    let end = match convert_to_int(args.next().as_deref().unwrap()) {
-                        Ok(v) => v,
-                        Err(e) => {
-                            println!("{}", e);
-                            return;
-                        }
-                    };
-                    for i in (start..=end).step_by(step_size as usize) {
-                        println!("{:.4}", i as f64);
-                    }
-                } else if arg_length == 2 {
-                    let start = match convert_to_int(args.next().as_deref().unwrap()) {
-                        Ok(v) => v,
-                        Err(e) => {
-                            println!("{}", e);
-                            return;
-                        }
-                    };
-                    let end = match convert_to_int(args.next().as_deref().unwrap()) {
-                        Ok(v) => v,
-                        Err(e) => {
-                            println!("{}", e);
-                            return;
-                        }
-                    };
-                    for i in (start..=end).step_by(1) {
-                        println!("{:.4}", i as f64);
-                    }
-                } else if arg_length == 1 {
-                    let end = match convert_to_int(args.next().as_deref().unwrap()) {
-                        Ok(v) => v,
-                        Err(e) => {
-                            println!("{}", e);
-                            return;
-                        }
-                    };
-                    for i in (default..=end).step_by(1) {
-                        println!("{:.4}", i as f64);
+        } else {
+            match convert_to_int(&args[1].to_string()) {
+                Ok(v) => {
+                    for i in (default_start..=v).step_by(default_step as usize) {
+                        println!("{}", i);
                     }
                 }
-            }
-            Some(_) => {}
-            None => {}
-        },
-        Some("-s") | Some("--separator") => {
-            let separator = args.next().unwrap();
-            let default = 1;
-
-            let arg_length = args.len();
-
-            if arg_length == 3 {
-                let start = match convert_to_int(args.next().as_deref().unwrap()) {
-                    Ok(v) => v,
-                    Err(e) => {
-                        println!("{}", e);
-                        return;
-                    }
-                };
-                let step_size = match convert_to_int(args.next().as_deref().unwrap()) {
-                    Ok(v) => v,
-                    Err(e) => {
-                        println!("{}", e);
-                        return;
-                    }
-                };
-                let end = match convert_to_int(args.next().as_deref().unwrap()) {
-                    Ok(v) => v,
-                    Err(e) => {
-                        println!("{}", e);
-                        return;
-                    }
-                };
-                for i in (start..=end).step_by(step_size as usize) {
-                    print!("{}{}", i, &separator);
-                }
-            } else if arg_length == 2 {
-                let start = match convert_to_int(args.next().as_deref().unwrap()) {
-                    Ok(v) => v,
-                    Err(e) => {
-                        println!("{}", e);
-                        return;
-                    }
-                };
-                let end = match convert_to_int(args.next().as_deref().unwrap()) {
-                    Ok(v) => v,
-                    Err(e) => {
-                        println!("{}", e);
-                        return;
-                    }
-                };
-                for i in (start..=end).step_by(1) {
-                    print!("{}{}", i, &separator);
-                }
-            } else if arg_length == 1 {
-                let end = match convert_to_int(args.next().as_deref().unwrap()) {
-                    Ok(v) => v,
-                    Err(e) => {
-                        println!("{}", e);
-                        return;
-                    }
-                };
-                for i in (default..=end).step_by(1) {
-                    print!("{}{}", i, &separator);
+                Err(e) => {
+                    println!("{}", e);
                 }
             }
         }
+    }
 
-        Some("-w") | Some("--equal-width") => {
-            for arg in args {
-                let var = arg.len();
-                println!("{}", &var);
-                let val = convert_to_int(&arg.to_string());
-                match val {
-                    Ok(v) => println!("{}", v),
+    if args_count == 3 {
+        let mut end = 10;
+        if args[1] == "-f" || args[1] == "-s" {
+            println!("seq: missing operand,\ntry seq --h");
+        } else if args[1] == "-w" {
+            match convert_to_int(&args[2].to_string()) {
+                Ok(v) => {
+                    end = v;
+                }
+                Err(e) => {
+                    println!("{}", e);
+                }
+            }
+            for i in (default_start..=end).step_by(default_step as usize) {
+                print!("{}{}", i, default_sep);
+            }
+        } else {
+            match convert_to_int(&args[1].to_string()) {
+                Ok(v) => {
+                    default_start = v;
+                }
+                Err(e) => {
+                    println!("{}", e);
+                }
+            }
+            match convert_to_int(&args[2].to_string()) {
+                Ok(v) => {
+                    end = v;
+                }
+                Err(e) => {
+                    println!("{}", e);
+                }
+            }
+            for i in (default_start..=end).step_by(default_step as usize) {
+                print!("{}{}", i, default_sep);
+            }
+        }
+    }
+    if args_count == 4 {
+        let mut end = 10;
+        if args[1] == "-s" {
+            default_sep = &args[2].to_string();
+        } else if args[1] == "-f" {
+            // float
+            if args[2] != "%f" {
+                println!("seq: missing operand,\ntry seq --h");
+                std::process::exit(1);
+            } else {
+                match convert_to_int(&args[3].to_string()) {
+                    Ok(v) => {
+                        default_start = v;
+                    }
+                    Err(e) => {
+                        println!("{}", e);
+                    }
+                }
+                match convert_to_int(&args[4].to_string()) {
+                    Ok(v) => {
+                        end = v;
+                    }
+                    Err(e) => {
+                        println!("{}", e);
+                    }
+                }
+                for i in (default_start..=end).step_by(default_step as usize) {
+                    print!("{:.4}{}", i as f64, default_sep);
+                }
+            }
+        } else if args[1] == "" {
+        }
+    }
+
+    if args_count <= 5 {
+        if args[1] == "--help" {
+            println!("{}", help_msg);
+            std::process::exit(0);
+        } else if args[1] == "--version" {
+            println!("{}", env!("CARGO_PKG_VERSION"));
+            std::process::exit(0);
+        } else if args[1] == "-s" || args[1] == "--separator" {
+            let mut end = 1;
+            if args_count < 3 {
+                println!("seq: missing operand");
+                std::process::exit(1);
+            }
+            default_sep = &args[2].to_string();
+            if args_count == 5 {
+                match convert_to_int(&args[3].to_string()) {
+                    Ok(v) => default_start = v,
+                    Err(e) => println!("{}", e),
+                }
+                match convert_to_int(&args[4].to_string()) {
+                    Ok(v) => default_step = v,
+                    Err(e) => println!("{}", e),
+                }
+                match convert_to_int(&args[5].to_string()) {
+                    Ok(v) => end = v,
                     Err(e) => println!("{}", e),
                 }
             }
         }
-
-        Some(arg) => {
-            let value_1 = match convert_to_int(arg) {
-                Ok(v) => v,
-                Err(e) => {
-                    println!("{e}");
-                    println!("Try 'seq --help' for more information.");
-                    return;
-                }
-            };
-
-            let arg_length = args.len();
-
-            if arg_length == 2 {
-                let step_size = match convert_to_int(args.next().as_deref().unwrap()) {
-                    Ok(v) => v,
-                    Err(e) => {
-                        println!("{}", e);
-                        return;
-                    }
-                };
-                let end = match convert_to_int(args.next().as_deref().unwrap()) {
-                    Ok(v) => v,
-                    Err(e) => {
-                        println!("{}", e);
-                        return;
-                    }
-                };
-                for i in (value_1..=end).step_by(step_size as usize) {
-                    println!("{}", i);
-                }
-            } else if arg_length == 1 {
-                let end = match convert_to_int(args.next().as_deref().unwrap()) {
-                    Ok(v) => v,
-                    Err(e) => {
-                        println!("{}", e);
-                        return;
-                    }
-                };
-                for i in (value_1..=end).step_by(1) {
-                    println!("{}", i);
-                }
-            } else {
-                for i in (1..=value_1).step_by(1) {
-                    println!("{}", i);
-                }
-            }
-        }
-
-        None => {
-            let message: String = String::from(
-                "
-seq: missing operand
-Try 'seq --help' for more information
-                ",
-            );
-            println!("{message}");
-        }
     }
+
+    //     match args.next().as_deref() {
+    //         Some("--help") => {
+    //             println!("{help_msg}");
+    //         }
+    //         Some("--version") => {
+    //             println!("{}", env!("CARGO_PKG_VERSION"));
+    //         }
+    //         Some("-f") | Some("--format") => match args.next().as_deref() {
+    //             Some("%f") => {
+    //                 let default = 1;
+    //
+    //                 let arg_length = args.len();
+    //
+    //                 if arg_length == 3 {
+    //                     let start = match convert_to_int(args.next().as_deref().unwrap()) {
+    //                         Ok(v) => v,
+    //                         Err(e) => {
+    //                             println!("{}", e);
+    //                             return;
+    //                         }
+    //                     };
+    //                     let step_size = match convert_to_int(args.next().as_deref().unwrap()) {
+    //                         Ok(v) => v,
+    //                         Err(e) => {
+    //                             println!("{}", e);
+    //                             return;
+    //                         }
+    //                     };
+    //                     let end = match convert_to_int(args.next().as_deref().unwrap()) {
+    //                         Ok(v) => v,
+    //                         Err(e) => {
+    //                             println!("{}", e);
+    //                             return;
+    //                         }
+    //                     };
+    //                     for i in (start..=end).step_by(step_size as usize) {
+    //                         println!("{:.4}", i as f64);
+    //                     }
+    //                 } else if arg_length == 2 {
+    //                     let start = match convert_to_int(args.next().as_deref().unwrap()) {
+    //                         Ok(v) => v,
+    //                         Err(e) => {
+    //                             println!("{}", e);
+    //                             return;
+    //                         }
+    //                     };
+    //                     let end = match convert_to_int(args.next().as_deref().unwrap()) {
+    //                         Ok(v) => v,
+    //                         Err(e) => {
+    //                             println!("{}", e);
+    //                             return;
+    //                         }
+    //                     };
+    //                     for i in (start..=end).step_by(1) {
+    //                         println!("{:.4}", i as f64);
+    //                     }
+    //                 } else if arg_length == 1 {
+    //                     let end = match convert_to_int(args.next().as_deref().unwrap()) {
+    //                         Ok(v) => v,
+    //                         Err(e) => {
+    //                             println!("{}", e);
+    //                             return;
+    //                         }
+    //                     };
+    //                     for i in (default..=end).step_by(1) {
+    //                         println!("{:.4}", i as f64);
+    //                     }
+    //                 }
+    //             }
+    //             Some(_) => {}
+    //             None => {}
+    //         },
+    //         Some("-s") | Some("--separator") => {
+    //             let separator = args.next().unwrap();
+    //             let default = 1;
+    //
+    //             let arg_length = args.len();
+    //
+    //             if arg_length == 3 {
+    //                 let start = match convert_to_int(args.next().as_deref().unwrap()) {
+    //                     Ok(v) => v,
+    //                     Err(e) => {
+    //                         println!("{}", e);
+    //                         return;
+    //                     }
+    //                 };
+    //                 let step_size = match convert_to_int(args.next().as_deref().unwrap()) {
+    //                     Ok(v) => v,
+    //                     Err(e) => {
+    //                         println!("{}", e);
+    //                         return;
+    //                     }
+    //                 };
+    //                 let end = match convert_to_int(args.next().as_deref().unwrap()) {
+    //                     Ok(v) => v,
+    //                     Err(e) => {
+    //                         println!("{}", e);
+    //                         return;
+    //                     }
+    //                 };
+    //                 for i in (start..=end).step_by(step_size as usize) {
+    //                     print!("{}{}", i, &separator);
+    //                 }
+    //             } else if arg_length == 2 {
+    //                 let start = match convert_to_int(args.next().as_deref().unwrap()) {
+    //                     Ok(v) => v,
+    //                     Err(e) => {
+    //                         println!("{}", e);
+    //                         return;
+    //                     }
+    //                 };
+    //                 let end = match convert_to_int(args.next().as_deref().unwrap()) {
+    //                     Ok(v) => v,
+    //                     Err(e) => {
+    //                         println!("{}", e);
+    //                         return;
+    //                     }
+    //                 };
+    //                 for i in (start..=end).step_by(1) {
+    //                     print!("{}{}", i, &separator);
+    //                 }
+    //             } else if arg_length == 1 {
+    //                 let end = match convert_to_int(args.next().as_deref().unwrap()) {
+    //                     Ok(v) => v,
+    //                     Err(e) => {
+    //                         println!("{}", e);
+    //                         return;
+    //                     }
+    //                 };
+    //                 for i in (default..=end).step_by(1) {
+    //                     print!("{}{}", i, &separator);
+    //                 }
+    //             }
+    //         }
+    //
+    //         Some("-w") | Some("--equal-width") => {
+    //             for arg in args {
+    //                 let var = arg.len();
+    //                 println!("{}", &var);
+    //                 let val = convert_to_int(&arg.to_string());
+    //                 match val {
+    //                     Ok(v) => println!("{}", v),
+    //                     Err(e) => println!("{}", e),
+    //                 }
+    //             }
+    //         }
+    //
+    //         Some(arg) => {
+    //             let value_1 = match convert_to_int(arg) {
+    //                 Ok(v) => v,
+    //                 Err(e) => {
+    //                     println!("{e}");
+    //                     println!("Try 'seq --help' for more information.");
+    //                     return;
+    //                 }
+    //             };
+    //
+    //             let arg_length = args.len();
+    //
+    //             if arg_length == 2 {
+    //                 let step_size = match convert_to_int(args.next().as_deref().unwrap()) {
+    //                     Ok(v) => v,
+    //                     Err(e) => {
+    //                         println!("{}", e);
+    //                         return;
+    //                     }
+    //                 };
+    //                 let end = match convert_to_int(args.next().as_deref().unwrap()) {
+    //                     Ok(v) => v,
+    //                     Err(e) => {
+    //                         println!("{}", e);
+    //                         return;
+    //                     }
+    //                 };
+    //                 for i in (value_1..=end).step_by(step_size as usize) {
+    //                     println!("{}", i);
+    //                 }
+    //             } else if arg_length == 1 {
+    //                 let end = match convert_to_int(args.next().as_deref().unwrap()) {
+    //                     Ok(v) => v,
+    //                     Err(e) => {
+    //                         println!("{}", e);
+    //                         return;
+    //                     }
+    //                 };
+    //                 for i in (value_1..=end).step_by(1) {
+    //                     println!("{}", i);
+    //                 }
+    //             } else {
+    //                 for i in (1..=value_1).step_by(1) {
+    //                     println!("{}", i);
+    //                 }
+    //             }
+    //         }
+    //
+    //         None => {
+    //             let message: String = String::from(
+    //                 "
+    // seq: missing operand
+    // Try 'seq --help' for more information
+    //                 ",
+    //             );
+    //             println!("{message}");
+    //         }
+    //     }
 }
 
 fn convert_to_int(val: &str) -> Result<i64, String> {
