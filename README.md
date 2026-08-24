@@ -50,7 +50,6 @@ The project is organized as a Cargo workspace, with each utility maintained as a
 
 ```text
 rust-utils/
-├── 
 ├── crates/
    ├── cat/
    ├── head/
