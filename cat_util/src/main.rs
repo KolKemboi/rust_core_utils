@@ -6,7 +6,7 @@ fn main() {
 
     // args.pop(); -- I am dumb, this removes the lasts val
     args.remove(0);
-    println!("{}", &args.join(","));
+    // println!("{}", &args.join(","));
 
     if args.len() == 0 {
         println!("ERROR::try cat --help");
@@ -20,6 +20,15 @@ fn main() {
     }
     if args[0] == "--version" {
         println!("{}", env!("CARGO_PKG_VERSION"));
+        return;
+    }
+    // multiple files are separeted by -
+
+    let hyphen: String = String::from("-");
+
+    if args.contains(&hyphen) {
+        readfile(&args[0].to_string());
+        readfile(&args[2].to_string());
         return;
     }
 

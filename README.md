@@ -17,7 +17,7 @@ The project focuses on **idiomatic Rust, operating-system interfaces, streaming 
 | `echo` | Done | Argument parsing, stdout |
 | `basename` | Done | Path manipulation |
 | `dirname` | Done | Path manipulation |
-| `cat` | Planned | File I/O, buffered streams |
+| `cat` | Done | File I/O, buffered streams |
 | `head` | Planned | Streaming I/O, line/byte processing |
 | `tail` | Planned | File seeking, buffering |
 | `wc` | Planned | Streaming algorithms, text processing |
